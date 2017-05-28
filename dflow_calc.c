@@ -39,8 +39,8 @@ ctxDB progDB;
 
 
 int checkRootDepth(int inst){
-    int src1Lat = (progDB.instStatsVec[inst].depend1 != ENTRY) ? checkRootDepth(progDB.instStatsVec[inst].depend1) : 0;
-    int src2Lat = (progDB.instStatsVec[inst].depend2 != ENTRY) ? checkRootDepth(progDB.instStatsVec[inst].depend2) : 0;
+    int src1Lat = (progDB.instStatsVec[inst].depend1 != ENTRY) ? progDB.instStatsVec[progDB.instStatsVec[inst].depend1].depth + progDB.instStatsVec[progDB.instStatsVec[inst].depend1].latency : 0;
+    int src2Lat = (progDB.instStatsVec[inst].depend2 != ENTRY) ? progDB.instStatsVec[progDB.instStatsVec[inst].depend2].depth+progDB.instStatsVec[progDB.instStatsVec[inst].depend2].latency : 0;
     int pathLat = (src1Lat>src2Lat) ? src1Lat : src2Lat; 
     return pathLat+progDB.instStatsVec[inst].latency;  
 }
@@ -66,7 +66,7 @@ ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[],
         // fill matrix with parameters deduced from inst info
         dependMat[progTrace[curInst].dstIdx][curInst] = DST;
         dependMat[progTrace[curInst].src1Idx][curInst] = (dependMat[progTrace[curInst].src1Idx][curInst]==DST) ? SRC_DST : SRC;
-        dependMat[progTrace[curInst].src2Idx][curInst] = (dependMat[progTrace[curInst].src2Idx][curInst]==DST) ? SRC_DST : SRC;
+        dependMat[progTrace[curInst].src2Idx][curInst] = ((dependMat[progTrace[curInst].src2Idx][curInst]==DST) ||  (dependMat[progTrace[curInst].src2Idx][curInst]==SRC_DST))? SRC_DST : SRC;
         //calc depth and latency recursively
         if (curInst == FIRST_INST) continue;//TODO: check if neccessary
         for (backScanInst = curInst-1; backScanInst >-1; backScanInst--){
